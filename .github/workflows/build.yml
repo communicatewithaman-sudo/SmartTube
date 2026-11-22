@@ -37,13 +37,22 @@ jobs:
         run: |
           set -o pipefail
           chmod +x gradlew
-          ./gradlew assembleStstableDebug --no-daemon --stacktrace --console=plain 2>&1 | tee build.log
+          ./gradlew assembleStstableDebug --no-daemon --console=plain 2>&1 | tee build.log
 
-      - name: Show error summary
+      - name: Error summary
         if: failure()
         run: |
-          grep -n -A25 "What went wrong" build.log | head -60
-          grep -n "Caused by" build.log | head -15
+          echo "===== LAST 60 LINES ====="
+          grep -v '^\.*$' build.log | tail -n 60 | cut -c1-220
+          echo "===== ERROR LINES ====="
+          grep -n -i -E "error:|FAILED|wrong|not found|Could not" build.log | head -n 25 | cut -c1-220
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
