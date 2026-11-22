@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - name: Checkout (with submodules)
@@ -24,7 +24,11 @@ jobs:
           java-version: '11'
 
       - name: Accept Android SDK licenses
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          sudo mkdir -p "$SDK/licenses"
+          echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" | sudo tee "$SDK/licenses/android-sdk-license" > /dev/null
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" | sudo tee "$SDK/licenses/android-sdk-preview-license" > /dev/null
 
       - name: Gradle memory
         run: echo "org.gradle.jvmargs=-Xmx4096m" >> gradle.properties
